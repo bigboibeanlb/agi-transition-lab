@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   workers: 2,
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: "http://127.0.0.1:4183",
     browserName: "chromium",
     launchOptions: {
       executablePath:
@@ -15,9 +15,9 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: "npm run preview -- --port 4173 --strictPort",
-    port: 4173,
-    reuseExistingServer: !process.env.CI,
+    command: "npm run preview -- --port 4183 --strictPort",
+    port: 4183,
+    reuseExistingServer: false,
   },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1050 } } },

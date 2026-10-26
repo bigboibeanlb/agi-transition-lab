@@ -117,3 +117,19 @@ vite.config.ts              Build and offline-shell generation
 ```
 
 There are no third-party runtime data requests. The custom range timeline avoids a large charting dependency and keeps each scenario interval keyboard-accessible with full textual labels.
+
+## ASCII-only lab experiment
+
+This checkout is exclusively `bigboibeanlb/agi-transition-lab`. Recovery point before this experiment: `04b1ebb89d19af1f0309b247e7b3fa889cb480b1`. The original `codexcloud` repository is a separate application.
+
+All application-rendered controls, delimiters, status indicators and interval charts are ASCII text. Semantic HTML buttons/dialogs remain for keyboard support, but their native graphical appearance is removed. Checkbox/switch controls render `[ ]` / `[x]` buttons. Text inputs use underlined characters, and the page uses no SVG, canvas, images, graphical borders, gradients or shapes. Font glyphs, browser scrollbars, Safari keyboard/file picker and browser chrome are provided by the device; they are outside application rendering control.
+
+`src/ascii/` provides a JSX presentation boundary, ASCII punctuation conversion and text symbols. This handles dynamic and imported research as well as static labels. Stored original data and exported JSON keep their original Unicode characters. Unrecognised non-ASCII characters display as explicit `\uXXXX` sequences, preserving information without inventing transliterations. Forecast charts quantise dates to responsive character cells; exact supplied windows remain visible alongside them. There are no numeric probability estimates in the original dataset, and none were introduced.
+
+Lab settings now use `agi-lab-age` and `agi-lab-hypothesis`. Existing settings are read as a fallback only; writes never change the original app's storage keys. Offline caches are also scoped by website path.
+
+Run `npm ci`, `npm test`, `npm run build`, and `npm run test:e2e` from this directory. Lab browser tests use port 4183 to avoid the original project's preview. Chromium tests cover desktop, touch-sized iPhone layouts, narrow viewports, keyboard controls, ASCII compliance, forbidden graphics, accessibility, imports and persistence. Physical iOS Safari still requires device verification.
+
+To view on iPhone after the lab deployment completes, open https://bigboibeanlb.github.io/agi-transition-lab/ in Safari and refresh. The original remains at https://bigboibeanlb.github.io/codexcloud/.
+
+To revert, ask Codex to restore only the lab to recovery commit `04b1ebb`, using a new restore commit and pushing to the lab's main branch. Keep the experiment in history; do not force-push or touch the original repository. Saved lab hypotheses can be exported before restoring.

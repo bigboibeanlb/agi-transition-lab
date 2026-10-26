@@ -3,7 +3,7 @@ import {
   GitCompareArrows,
   ShieldCheck,
   Unplug,
-} from "lucide-react";
+} from "../ascii/symbols";
 import { ageWindow, SCENARIOS, type Milestone } from "../data/framework";
 import Modal from "./Modal";
 export default function Details({

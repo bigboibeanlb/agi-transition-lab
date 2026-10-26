@@ -26,7 +26,7 @@ test("original default, scenario controls, horizon, filters and accessible detai
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Fast / Bull", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: /Early Era 2 · AGI, Fast: 2028–2033/ }),
+    page.getByRole("button", { name: /Early Era 2 . AGI, Fast: 2028-2033/ }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Compare all", exact: true }).click();
   await expect(page.locator(".forecast-bar")).toHaveCount(24);
@@ -37,10 +37,10 @@ test("original default, scenario controls, horizon, filters and accessible detai
   await page.getByLabel("Economic & industrial", { exact: true }).check();
   await expect(page.locator(".forecast-bar")).toHaveCount(12);
   await page
-    .getByRole("button", { name: /Early Era 2 · AGI, Central:/ })
+    .getByRole("button", { name: /Early Era 2 . AGI, Central:/ })
     .click();
   const dialog = page.getByRole("dialog", {
-    name: "Early Era 2 · AGI details",
+    name: "Early Era 2 . AGI details",
   });
   await expect(
     dialog.getByRole("heading", {
@@ -48,14 +48,14 @@ test("original default, scenario controls, horizon, filters and accessible detai
       exact: true,
     }),
   ).toBeVisible();
-  await expect(dialog.getByText("2034–2045", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("2034-2045", { exact: true })).toBeVisible();
   await expect(
-    dialog.getByText("2050–2075 or absent", { exact: true }),
+    dialog.getByText("2050-2075 or absent", { exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();
   await expect(
-    page.getByRole("button", { name: /Early Era 2 · AGI, Central:/ }),
+    page.getByRole("button", { name: /Early Era 2 . AGI, Central:/ }),
   ).toBeFocused();
   await expect
     .poll(() =>
@@ -72,15 +72,15 @@ test("age lens, key milestone comparison and evidence checklist", async ({
   await page.goto("/");
   await page.getByRole("button", { name: "Lifetime lens" }).click();
   await page.getByRole("switch", { name: "Show ages" }).check();
-  await expect(page.getByText("Age ≈27–38", { exact: true })).toBeVisible();
+  await expect(page.getByText("Age ~27-38", { exact: true })).toBeVisible();
   await page
     .getByRole("spinbutton", { name: "Reference age", exact: true })
     .fill("30");
-  await expect(page.getByText("Age ≈38–49", { exact: true })).toBeVisible();
+  await expect(page.getByText("Age ~38-49", { exact: true })).toBeVisible();
   await page
     .getByRole("spinbutton", { name: "Reference year", exact: true })
     .fill("2027");
-  await expect(page.getByText("Age ≈37–48", { exact: true })).toBeVisible();
+  await expect(page.getByText("Age ~37-48", { exact: true })).toBeVisible();
   await page
     .getByRole("spinbutton", { name: "Reference year", exact: true })
     .fill("2026");
@@ -89,7 +89,7 @@ test("age lens, key milestone comparison and evidence checklist", async ({
   await expect(dialog.locator(".comparison-card")).toHaveCount(3);
   await expect(
     dialog.getByRole("heading", {
-      name: "E3 · UK near-abundance",
+      name: "E3 . UK near-abundance",
       exact: true,
     }),
   ).toBeVisible();
@@ -108,7 +108,7 @@ test("age lens, key milestone comparison and evidence checklist", async ({
     page.getByText(/At least 70% of task families overall/),
   ).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Age ≈38–49", { exact: true })).toBeVisible();
+  await expect(page.getByText("Age ~38-49", { exact: true })).toBeVisible();
 });
 test("views preserve independent alignment and precise economic threshold", async ({
   page,
@@ -180,7 +180,7 @@ test("import review, hypothetical isolation, restore original and export", async
     title: "An alternative",
     windows: {
       agi: {
-        central: { label: "2040–2050 hypothetical", start: 2040, end: 2050 },
+        central: { label: "2040-2050 hypothetical", start: 2040, end: 2050 },
       },
     },
   };
@@ -201,14 +201,14 @@ test("import review, hypothetical isolation, restore original and export", async
   ).toBeVisible();
   await expect(
     page.getByRole("button", {
-      name: /Early Era 2 · AGI, Central: 2040–2050 hypothetical/,
+      name: /Early Era 2 . AGI, Central: 2040-2050 hypothetical/,
     }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Restore original", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: /Early Era 2 · AGI, Central: 2034–2045/ }),
+    page.getByRole("button", { name: /Early Era 2 . AGI, Central: 2034-2045/ }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Research data" }).click();
   const download = page.waitForEvent("download");
@@ -244,10 +244,10 @@ test("production shell reloads offline with research and interactions", async ({
     }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: /Early Era 2 · AGI, Central:/ })
+    .getByRole("button", { name: /Early Era 2 . AGI, Central:/ })
     .click();
   await expect(
-    page.getByRole("dialog", { name: "Early Era 2 · AGI details" }),
+    page.getByRole("dialog", { name: "Early Era 2 . AGI details" }),
   ).toBeVisible();
   await context.setOffline(false);
 });
@@ -271,7 +271,7 @@ test("accessible overview and milestone panel", async ({ page }) => {
     })),
   ).toEqual([]);
   await page
-    .getByRole("button", { name: /Early Era 2 · AGI, Central:/ })
+    .getByRole("button", { name: /Early Era 2 . AGI, Central:/ })
     .click();
   await page.locator("dialog").evaluate(async (element) => {
     await Promise.all(
@@ -315,4 +315,107 @@ test("timeline and views fit narrow phones, tablets and desktop without lateral 
       .toBe(true);
     await dialog.getByRole("button", { name: "Close panel" }).click();
   }
+});
+test("ASCII-only rendering throughout views, panels and imported research", async ({
+  page,
+}) => {
+  await page.goto("/");
+  async function audit() {
+    expect(await page.locator("body").innerText()).not.toMatch(/[^\x00-\x7f]/);
+    await expect(page.locator("svg,canvas,img,picture,video")).toHaveCount(0);
+    const violations = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("*"))
+        .filter((el) => {
+          const style = getComputedStyle(el);
+          if (style.display === "none" || !(el as HTMLElement).offsetWidth)
+            return false;
+          return (
+            style.backgroundImage !== "none" ||
+            style.boxShadow !== "none" ||
+            parseFloat(style.borderTopWidth) > 0
+          );
+        })
+        .map((el) => el.tagName + "." + el.className),
+    );
+    expect(violations).toEqual([]);
+  }
+  await audit();
+  for (const name of ["Scenarios", "Alignment", "Economy", "Methods"]) {
+    const full: Record<string, string> = {
+      Scenarios: "Scenario comparison",
+      Alignment: "Capability & alignment",
+      Economy: "Economic transition",
+      Methods: "Methodology",
+    };
+    await navigate(
+      page,
+      test.info().project.name === "iphone" ? name : full[name],
+    );
+    await audit();
+  }
+  await navigate(page, "Overview");
+  await page
+    .getByRole("button", { name: /Early Era 2 . AGI, Central:/ })
+    .click();
+  await audit();
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Research data", exact: true })
+    .click();
+  await page.locator("input[type=file]").setInputFiles({
+    name: "unicode.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(
+      JSON.stringify({
+        schemaVersion: 1,
+        kind: "user-hypothesis",
+        title: "Research \u03b1",
+        windows: {
+          agi: {
+            central: {
+              label: "2040\u20132050 \u03b1",
+              start: 2040,
+              end: 2050,
+            },
+          },
+        },
+      }),
+    ),
+  });
+  await audit();
+  await page.getByRole("button", { name: "Apply as hypothesis" }).click();
+  await audit();
+});
+test("keyboard selectors and lab storage preserve original settings", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "transition-age",
+      JSON.stringify({ enabled: true, age: 19, year: 2026 }),
+    ),
+  );
+  await page.reload();
+  const scenario = page.getByRole("button", {
+    name: "Fast / Bull",
+    exact: true,
+  });
+  await scenario.focus();
+  await page.keyboard.press("Enter");
+  await expect(scenario).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Lifetime lens" }).click();
+  await page
+    .getByRole("spinbutton", { name: "Reference age", exact: true })
+    .fill("40");
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("transition-age")!).age,
+    ),
+  ).toBe(19);
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("agi-lab-age")!).age,
+    ),
+  ).toBe(40);
 });

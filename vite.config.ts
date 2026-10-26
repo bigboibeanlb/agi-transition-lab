@@ -10,13 +10,11 @@ function offlineShell(): Plugin {
     generateBundle(_options, bundle) {
       const files = [
         "index.html",
-        "favicon.svg",
         ...Object.keys(bundle).filter((name) => /\.(js|css)$/.test(name)),
       ];
       const revision = createHash("sha256")
         .update(Object.keys(bundle).join("-"))
         .update(readFileSync("index.html"))
-        .update(readFileSync("public/favicon.svg"))
         .digest("hex")
         .slice(0, 16);
       this.emitFile({
@@ -41,6 +39,13 @@ self.addEventListener('fetch', event => {
   };
 }
 export default defineConfig({
-  plugins: [react(), tailwindcss(), offlineShell()],
+  plugins: [
+    react({ jsxImportSource: "@ascii" }),
+    tailwindcss(),
+    offlineShell(),
+  ],
   base: "./",
+  resolve: {
+    alias: { "@ascii": new URL("./src/ascii", import.meta.url).pathname },
+  },
 });

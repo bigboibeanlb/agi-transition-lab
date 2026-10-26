@@ -23,7 +23,7 @@ import {
   UserRound,
   X,
   Zap,
-} from "lucide-react";
+} from "./ascii/symbols";
 import {
   ageWindow,
   applyHypothesis,
@@ -110,7 +110,9 @@ const TITLES: Record<
 };
 function loadHypothesis() {
   try {
-    const saved = localStorage.getItem("transition-hypothesis");
+    const saved =
+      localStorage.getItem("agi-lab-hypothesis") ??
+      localStorage.getItem("transition-hypothesis");
     return saved ? parseHypothesis(saved) : null;
   } catch {
     return null;
@@ -118,7 +120,11 @@ function loadHypothesis() {
 }
 function loadAge(): { enabled: boolean; age: number; year: number } {
   try {
-    const a = JSON.parse(localStorage.getItem("transition-age") || "null");
+    const a = JSON.parse(
+      (localStorage.getItem("agi-lab-age") ??
+        localStorage.getItem("transition-age")) ||
+        "null",
+    );
     if (
       a &&
       typeof a.enabled === "boolean" &&
@@ -170,7 +176,7 @@ export default function App() {
   const milestones = applyHypothesis(hypothesisActive ? hypothesis : null);
   useEffect(() => {
     try {
-      localStorage.setItem("transition-age", JSON.stringify(age));
+      localStorage.setItem("agi-lab-age", JSON.stringify(age));
     } catch {
       setNotice(
         "Storage is unavailable. Your settings will last for this session only.",
@@ -229,10 +235,7 @@ export default function App() {
     setHypothesis(pendingImport);
     setHypothesisActive(true);
     try {
-      localStorage.setItem(
-        "transition-hypothesis",
-        JSON.stringify(pendingImport),
-      );
+      localStorage.setItem("agi-lab-hypothesis", JSON.stringify(pendingImport));
     } catch {
       setNotice(
         "Hypothesis applied for this session; local storage is unavailable.",

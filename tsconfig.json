@@ -13,7 +13,11 @@
     "noEmit": true,
     "types": ["vite/client", "node"],
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "jsxImportSource": "@ascii",
+    "paths": {
+      "@ascii/*": ["./src/ascii/*"]
+    }
   },
   "include": ["src", "vite.config.ts", "playwright.config.ts", "tests"]
 }

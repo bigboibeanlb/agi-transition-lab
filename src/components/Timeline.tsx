@@ -1,12 +1,5 @@
-import {
-  ArrowRight,
-  Check,
-  ChevronRight,
-  Plus,
-  RotateCcw,
-  SlidersHorizontal,
-} from "lucide-react";
-import type { Milestone, ScenarioMode } from "../data/framework";
+import { useEffect, useRef, useState } from "react";
+import type { Forecast, Milestone, ScenarioMode } from "../data/framework";
 import { ageWindow, ERA_NAMES, SCENARIOS } from "../data/framework";
 export type TimelineProps = {
   milestones: Milestone[];
@@ -28,105 +21,110 @@ export type TimelineProps = {
   economicOnly?: boolean;
   forceAll?: boolean;
 };
-export default function Timeline(p: TimelineProps) {
-  const scenarios = SCENARIOS.filter(
-    (s) => p.forceAll || p.mode === "all" || s.id === p.mode,
+
+export function interval(f: Forecast, horizon: number, columns: number) {
+  const pos = (year: number) =>
+    Math.max(
+      0,
+      Math.min(
+        columns - 1,
+        Math.round(((year - 2026) / (horizon - 2026)) * (columns - 1)),
+      ),
+    );
+  if (f.start >= horizon) return ".".repeat(columns - 1) + ">";
+  const start = pos(f.start),
+    end = pos(f.end ?? horizon);
+  const cells: string[] = Array.from({ length: columns }, (_, i) =>
+    i < start || i > end ? "." : "=",
   );
-  const all = scenarios.length === 3;
-  const ticks =
-    p.horizon === 2040
-      ? [2026, 2030, 2035, 2040]
-      : p.horizon === 2060
-        ? [2026, 2035, 2045, 2060]
-        : [2026, 2040, 2060, 2080, 2100];
+  cells[start] = "[";
+  cells[end] = f.open || f.end === null || f.end > horizon ? ">" : "]";
+  return cells.join("");
+}
+export default function Timeline(p: TimelineProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [columns, setColumns] = useState(26);
+  useEffect(() => {
+    const node = ref.current!;
+    const observer = new ResizeObserver((entries) =>
+      setColumns(
+        Math.max(
+          18,
+          Math.min(70, Math.floor(entries[0].contentRect.width / 8.5)),
+        ),
+      ),
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const scenarios = SCENARIOS.filter(
+    (s) => p.forceAll || p.mode === "all" || p.mode === s.id,
+  );
   const visible = p.milestones.filter((m) =>
     m.era === "parallel"
       ? p.showEconomic || p.economicOnly
       : p.showCognitive && !p.economicOnly,
   );
-  const pos = (year: number) =>
-    Math.max(0, Math.min(100, ((year - 2026) / (p.horizon - 2026)) * 100));
   return (
     <section
       className="panel timeline-panel"
       aria-label="Interactive forecast timeline"
     >
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">
-            <span className="tiny-line" /> THE LONG VIEW
-          </span>
-          <h2>
-            {p.economicOnly ? "The path to abundance" : "Transition timeline"}
-            <span className="count-pill">{visible.length} milestones</span>
-          </h2>
-          <p>
-            Possible arrival windows. Explore a milestone to see what it takes.
-          </p>
-        </div>
-        <div className="horizon-control" aria-label="Timeline horizon">
-          {[2040, 2060, 2100].map((h) => (
-            <button
-              key={h}
-              aria-pressed={p.horizon === h}
-              onClick={() => p.setHorizon(h)}
-            >
-              {h === 2040 ? "Near" : h === 2060 ? "Mid" : "Long"}
-              <span>{h === 2100 ? "2100+" : h}</span>
-            </button>
-          ))}
-        </div>
+      <header>
+        <span className="eyebrow">
+          FORECAST INSTRUMENT / {visible.length} milestones
+        </span>
+        <h2>
+          {p.economicOnly ? "The path to abundance" : "Transition timeline"}
+        </h2>
+        <p>
+          Each character is a time bin. Select a range for its full research
+          record.
+        </p>
+      </header>
+      <div className="horizon-control" aria-label="Timeline horizon">
+        {[2040, 2060, 2100].map((h) => (
+          <button
+            key={h}
+            aria-pressed={p.horizon === h}
+            onClick={() => p.setHorizon(h)}
+          >
+            {h === 2040 ? "Near" : h === 2060 ? "Mid" : "Long"}{" "}
+            {h === 2100 ? "2100+" : h}
+          </button>
+        ))}
       </div>
-      <div className="timeline-toolbar">
-        <div className="scenario-control" aria-label="Scenario selection">
-          {!p.forceAll && (
-            <>
+      <div className="scenario-control" aria-label="Scenario selection">
+        {!p.forceAll && (
+          <>
+            <button
+              aria-label="Compare all"
+              aria-pressed={p.mode === "all"}
+              onClick={() => p.setMode("all")}
+            >
+              Compare all
+            </button>
+            {SCENARIOS.map((s) => (
               <button
-                aria-label="Compare all"
-                aria-pressed={p.mode === "all"}
-                onClick={() => p.setMode("all")}
+                key={s.id}
+                aria-pressed={p.mode === s.id}
+                onClick={() => p.setMode(s.id)}
               >
-                Compare all
-              </button>
-              {SCENARIOS.map((s) => (
-                <button
-                  key={s.id}
-                  aria-label={`${s.name} / ${s.alias}`}
-                  aria-pressed={p.mode === s.id}
-                  onClick={() => p.setMode(s.id)}
-                >
-                  <i style={{ background: s.color }} />
-                  {s.name}
-                  <span className="scenario-alias"> / {s.alias}</span>
-                </button>
-              ))}
-            </>
-          )}
-          {p.forceAll &&
-            SCENARIOS.map((s) => (
-              <span className="scenario-key" key={s.id}>
-                <i style={{ background: s.color }} />
                 {s.name} / {s.alias}
-              </span>
+              </button>
             ))}
-        </div>
-        <button
-          className="icon-button reset-button"
-          onClick={p.reset}
-          title="Reset timeline filters"
-          aria-label="Reset timeline filters"
-        >
-          <RotateCcw size={15} />
+          </>
+        )}
+        <button onClick={p.reset} aria-label="Reset timeline filters">
+          Reset
         </button>
       </div>
       <div className="filter-row">
-        <span className="filter-caption">
-          <SlidersHorizontal size={13} /> SHOW
-        </span>
         {!p.economicOnly && (
           <label>
             <input
               type="checkbox"
+              aria-label="Cognitive eras"
               checked={p.showCognitive}
               onChange={(e) => p.setShowCognitive(e.target.checked)}
             />{" "}
@@ -136,173 +134,75 @@ export default function Timeline(p: TimelineProps) {
         <label>
           <input
             type="checkbox"
+            aria-label={
+              p.economicOnly ? "Economic milestones" : "Economic & industrial"
+            }
             checked={p.showEconomic || !!p.economicOnly}
             disabled={p.economicOnly}
             onChange={(e) => p.setShowEconomic(e.target.checked)}
-          />{" "}
+          />
           {p.economicOnly ? "Economic milestones" : "Economic & industrial"}
         </label>
-        <span className="window-hint">Shaded bars = scenario windows</span>
       </div>
-      <div className={`timeline-chart ${all ? "all-scenarios" : ""}`}>
+      <div ref={ref} className="ascii-chart">
         <div className="axis-row">
-          <div className="axis-name">MILESTONE</div>
-          <div className="axis-track">
-            {ticks.map((y, i) => (
-              <span
-                key={y}
-                style={{ left: `${pos(y)}%` }}
-                className={
-                  i === 0
-                    ? "first-tick"
-                    : i === ticks.length - 1
-                      ? "last-tick"
-                      : ""
-                }
-              >
-                {y}
-                {y === 2100 ? "+" : ""}
-              </span>
-            ))}
-          </div>
-          <span className="axis-window">
-            {p.age ? "YOUR AGE / WINDOW" : "ARRIVAL WINDOW"}
-          </span>
+          <span>2026</span>
+          <span>{p.horizon === 2100 ? "2100+" : p.horizon}</span>
         </div>
         {visible.length === 0 && (
-          <div className="empty-state">
-            No milestones selected.
-            <button className="text-button" onClick={p.reset}>
-              Reset filters <ArrowRight size={14} />
-            </button>
-          </div>
+          <p>No milestones selected. Use Reset to restore the timeline.</p>
         )}
-        {visible.map((m, index) => {
-          const groupStart = index === 0 || m.era !== visible[index - 1].era;
-          return (
-            <div className={`milestone-group era-${m.era}`} key={m.id}>
-              {groupStart && (
-                <div className="era-divider">
-                  <span className="era-dot" />
-                  {m.era === "parallel" ? "PARALLEL PROGRESS" : `ERA ${m.era}`}
-                  <span>
-                    {m.era === "parallel"
-                      ? "Technology → real-world access"
-                      : ERA_NAMES[m.era]}
-                  </span>
-                </div>
-              )}
-              <div className="milestone-row">
-                <div className="milestone-label">
-                  <button
-                    onClick={() => p.open(m.id)}
-                    className="milestone-name"
-                  >
-                    {m.short}
-                    {m.id === "agi" || m.id === "asi" ? (
-                      <span className="mini-badge">{m.id.toUpperCase()}</span>
-                    ) : null}
-                    <ChevronRight size={12} />
-                  </button>
-                  <span className="milestone-subtitle">{m.subtitle}</span>
-                  <button
-                    className={`add-compare ${p.compare.includes(m.id) ? "is-selected" : ""}`}
-                    onClick={() => p.toggleCompare(m.id)}
-                    aria-label={`Compare ${m.name}: ${p.compare.includes(m.id) ? "remove from" : "add to"} selection`}
-                  >
-                    {p.compare.includes(m.id) ? (
-                      <Check size={11} />
-                    ) : (
-                      <Plus size={11} />
-                    )}
-                    <span>Compare</span>
-                  </button>
-                </div>
-                <div className="row-tracks">
-                  {ticks.map((y) => (
-                    <i
-                      className="grid-line"
-                      key={y}
-                      style={{ left: `${pos(y)}%` }}
-                    />
-                  ))}
-                  <span className="now-line" />
-                  {scenarios.map((s) => {
-                    const f = m.windows[s.id];
-                    const offscreen = f.start >= p.horizon;
-                    const left = offscreen ? 80 : pos(f.start);
-                    const width = offscreen
-                      ? 20
-                      : Math.max(0.6, pos(f.end ?? p.horizon) - left);
-                    const continues =
-                      offscreen ||
-                      f.end === null ||
-                      f.open ||
-                      f.end > p.horizon;
-                    return (
-                      <div className="track" key={s.id}>
-                        <button
-                          className={`forecast-bar ${continues ? "open-ended" : ""} ${offscreen ? "offscreen" : ""}`}
-                          style={
-                            {
-                              left: `${left}%`,
-                              width: `${Math.min(100 - left, width)}%`,
-                              "--bar-color": s.color,
-                            } as React.CSSProperties
-                          }
-                          aria-label={`${m.name}, ${s.name}: ${f.label}${p.age ? `, ${ageWindow(f, p.referenceAge, p.referenceYear)}` : ""}. Open details.`}
-                          title={`${s.name}: ${f.label}`}
-                          onClick={() => p.open(m.id)}
-                        >
-                          <span className="bar-fill" />
-                          {continues && <ArrowRight size={12} />}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="window-values">
-                  {scenarios.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => p.open(m.id)}
-                      style={
-                        { "--scenario-color": s.color } as React.CSSProperties
-                      }
-                    >
-                      <span>
-                        {p.age
-                          ? ageWindow(
-                              m.windows[s.id],
-                              p.referenceAge,
-                              p.referenceYear,
-                            )
-                          : m.windows[s.id].label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {visible.map((m, index) => (
+          <article className="milestone-group" key={m.id}>
+            {(index === 0 || visible[index - 1].era !== m.era) && (
+              <h3>
+                {m.era === "parallel"
+                  ? "PARALLEL PROGRESS"
+                  : `ERA ${m.era} / ${ERA_NAMES[m.era]}`}
+              </h3>
+            )}
+            <div className="milestone-label">
+              <button onClick={() => p.open(m.id)}>{m.name}</button>
+              <button
+                aria-label={`Compare ${m.name}: ${p.compare.includes(m.id) ? "remove from" : "add to"} selection`}
+                onClick={() => p.toggleCompare(m.id)}
+              >
+                {p.compare.includes(m.id) ? "x" : "+"} Compare
+              </button>
             </div>
-          );
-        })}
-        <div className="chart-bottom">
-          <span>
-            <i /> 2026 · Framework baseline
-          </span>
-          <span>
-            Beyond the horizon <ArrowRight size={13} />
-          </span>
-        </div>
+            <p>{m.subtitle}</p>
+            {scenarios.map((s) => {
+              const f = m.windows[s.id];
+              return (
+                <div className="ascii-range" key={s.id}>
+                  <span>
+                    {s.name} / {s.alias}
+                  </span>
+                  <button
+                    className={`forecast-bar ${f.start >= p.horizon ? "offscreen" : ""}`}
+                    aria-label={`${m.name}, ${s.name}: ${f.label}${p.age ? `, ${ageWindow(f, p.referenceAge, p.referenceYear)}` : ""}. Open details.`}
+                    onClick={() => p.open(m.id)}
+                  >
+                    <span className="range-glyphs" aria-hidden="true">
+                      {interval(f, p.horizon, columns)}
+                    </span>
+                  </button>
+                  <span>{f.label}</span>
+                  {p.age && (
+                    <span>{ageWindow(f, p.referenceAge, p.referenceYear)}</span>
+                  )}
+                </div>
+              );
+            })}
+          </article>
+        ))}
       </div>
-      <div className="timeline-footnote">
-        <span className="info-symbol">i</span>
-        <p>
-          Subjective scenario windows, not calibrated probabilities or
-          confidence intervals. An arrow indicates an open or off-screen window.
-          “Or absent” means arrival is not assured.
-        </p>
-      </div>
+      <p className="timeline-footnote">
+        Legend: . outside window; [ start; = possible arrival; ] end; &gt; open
+        or beyond horizon. Character positions are approximate; labels give the
+        original windows. Subjective scenarios, not probabilities or confidence
+        intervals. "Or absent" preserves non-arrival uncertainty.
+      </p>
     </section>
   );
 }

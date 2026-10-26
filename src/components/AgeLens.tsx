@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UserRound } from "lucide-react";
+import { UserRound } from "../ascii/symbols";
 import { ageAt } from "../data/framework";
 export type AgeSettings = { enabled: boolean; age: number; year: number };
 export default function AgeLens({
