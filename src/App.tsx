@@ -334,6 +334,7 @@ export default function App() {
           {NAV.map((item) => (
             <button
               key={item.id}
+              aria-label={item.label}
               className={view === item.id ? "active" : ""}
               onClick={() => navigate(item.id)}
               aria-current={view === item.id ? "page" : undefined}
@@ -403,6 +404,12 @@ export default function App() {
         </header>
         <main id="main-content" tabIndex={-1}>
           <section className="page-intro">
+            <div className="terminal-session" aria-hidden="true">
+              <span>TRANSITION OBSERVATORY / RESEARCH TERMINAL</span>
+              <span className="terminal-boot">
+                &gt; Reading framework<span className="terminal-cursor">_</span>
+              </span>
+            </div>
             <div>
               <span className="eyebrow">{TITLES[view].eyebrow}</span>
               <h1>

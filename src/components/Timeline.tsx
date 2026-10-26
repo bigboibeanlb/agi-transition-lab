@@ -82,6 +82,7 @@ export default function Timeline(p: TimelineProps) {
           {!p.forceAll && (
             <>
               <button
+                aria-label="Compare all"
                 aria-pressed={p.mode === "all"}
                 onClick={() => p.setMode("all")}
               >
